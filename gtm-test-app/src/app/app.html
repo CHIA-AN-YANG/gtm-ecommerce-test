@@ -1,0 +1,31 @@
+<div class="app-container">
+  <header class="app-header">
+    <h1>{{ title }}</h1>
+    <p class="subtitle">Test and validate GA4 ecommerce events with GTM</p>
+  </header>
+
+  <div class="success-banner" *ngIf="showSuccessMessage">
+    ✓ Event "{{ lastPushedEvent }}" successfully pushed to dataLayer
+  </div>
+
+  <div class="main-content">
+    <div class="left-panel">
+      <app-event-selector
+        (eventSelected)="onEventSelected($event)"
+      ></app-event-selector>
+
+      <app-event-form
+        *ngIf="selectedEvent"
+        [eventConfig]="selectedEvent"
+        (preview)="onPreview($event)"
+        (formSubmit)="onFormSubmit($event)"
+      ></app-event-form>
+    </div>
+
+    <div class="right-panel">
+      <app-payload-preview
+        [payload]="previewPayload"
+      ></app-payload-preview>
+    </div>
+  </div>
+</div>
