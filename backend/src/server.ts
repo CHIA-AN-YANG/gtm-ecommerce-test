@@ -5,6 +5,7 @@ import { config } from './config.js';
 import authPlugin from './auth/plugin.js';
 import authRoutes from './auth/routes.js';
 import settingsRoutes from './settings/routes.js';
+import eventsRoutes from './events/routes.js';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -38,6 +39,9 @@ async function buildServer() {
 
   // Register settings routes
   await fastify.register(settingsRoutes);
+
+  // Register events routes
+  await fastify.register(eventsRoutes);
 
   // Health check endpoint
   fastify.get('/health', async (request, reply) => {
