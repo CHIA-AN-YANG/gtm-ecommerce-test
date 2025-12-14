@@ -1,12 +1,16 @@
 import { FastifyPluginAsync } from 'fastify';
 
 interface SettingsBody {
-  gtm_container_id?: string;
-  ga_measurement_id?: string;
+  gtm_container_id: string;
+  ga_measurement_id: string;
+}
+
+interface SettingsParams {
+  id: string;
 }
 
 const settingsRoutes: FastifyPluginAsync = async (fastify) => {
-  // GET /api/settings - Retrieve user's GTM and GA4 settings
+  // GET /api/settings - Retrieve all settings for the authenticated user
   fastify.get(
     '/api/settings',
     {
@@ -18,32 +22,27 @@ const settingsRoutes: FastifyPluginAsync = async (fastify) => {
       const settings = fastify.db
         .prepare(
           `
-      SELECT gtm_container_id, ga_measurement_id, updated_at
+      SELECT id, gtm_container_id, ga_measurement_id, updated_at
       FROM user_settings
       WHERE user_id = ?
+      ORDER BY updated_at DESC
     `
         )
-        .get(userId);
-
-      if (!settings) {
-        return reply.send({
-          gtm_container_id: null,
-          ga_measurement_id: null,
-        });
-      }
+        .all(userId);
 
       return reply.send(settings);
     }
   );
 
-  // PUT /api/settings - Create or update user's GTM and GA4 settings
-  fastify.put<{ Body: SettingsBody }>(
+  // POST /api/settings - Create a new user settings record
+  fastify.post<{ Body: SettingsBody }>(
     '/api/settings',
     {
       preHandler: [fastify.authenticate],
       schema: {
         body: {
           type: 'object',
+          required: ['gtm_container_id', 'ga_measurement_id'],
           properties: {
             gtm_container_id: { type: 'string' },
             ga_measurement_id: { type: 'string' },
@@ -56,87 +55,177 @@ const settingsRoutes: FastifyPluginAsync = async (fastify) => {
       const { gtm_container_id, ga_measurement_id } = request.body;
 
       // Validate GTM Container ID
-      if (gtm_container_id !== undefined && gtm_container_id !== null) {
-        if (!gtm_container_id.startsWith('GTM-')) {
-          return reply.code(400).send({
-            error: 'Invalid GTM Container ID',
-            message: 'GTM Container ID must start with "GTM-"',
-          });
-        }
+      if (!gtm_container_id.startsWith('GTM-')) {
+        return reply.code(400).send({
+          error: 'Invalid GTM Container ID',
+          message: 'GTM Container ID must start with "GTM-"',
+        });
       }
 
       // Validate GA4 Measurement ID
-      if (ga_measurement_id !== undefined && ga_measurement_id !== null) {
-        if (!ga_measurement_id.startsWith('G-')) {
-          return reply.code(400).send({
-            error: 'Invalid GA4 Measurement ID',
-            message: 'GA4 Measurement ID must start with "G-"',
-          });
-        }
+      if (!ga_measurement_id.startsWith('G-')) {
+        return reply.code(400).send({
+          error: 'Invalid GA4 Measurement ID',
+          message: 'GA4 Measurement ID must start with "G-"',
+        });
       }
 
-      // Check if settings exist for this user
-      const existingSettings = fastify.db
+      // Insert new settings
+      const result = fastify.db
         .prepare(
           `
-      SELECT id FROM user_settings WHERE user_id = ?
-    `
-        )
-        .get(userId);
-
-      if (existingSettings) {
-        // Update existing settings
-        const updates: string[] = [];
-        const params: any[] = [];
-
-        if (gtm_container_id !== undefined) {
-          updates.push('gtm_container_id = ?');
-          params.push(gtm_container_id);
-        }
-
-        if (ga_measurement_id !== undefined) {
-          updates.push('ga_measurement_id = ?');
-          params.push(ga_measurement_id);
-        }
-
-        if (updates.length > 0) {
-          updates.push('updated_at = CURRENT_TIMESTAMP');
-          params.push(userId);
-
-          fastify.db
-            .prepare(
-              `
-          UPDATE user_settings
-          SET ${updates.join(', ')}
-          WHERE user_id = ?
-        `
-            )
-            .run(...params);
-        }
-      } else {
-        // Insert new settings
-        fastify.db
-          .prepare(
-            `
         INSERT INTO user_settings (user_id, gtm_container_id, ga_measurement_id)
         VALUES (?, ?, ?)
       `
-          )
-          .run(userId, gtm_container_id || null, ga_measurement_id || null);
+        )
+        .run(userId, gtm_container_id, ga_measurement_id);
+
+      // Fetch and return the created settings
+      const newSettings = fastify.db
+        .prepare(
+          `
+      SELECT id, gtm_container_id, ga_measurement_id, updated_at
+      FROM user_settings
+      WHERE id = ?
+    `
+        )
+        .get(result.lastInsertRowid);
+
+      return reply.code(201).send(newSettings);
+    }
+  );
+
+  // PUT /api/settings/:id - Update an existing setting
+  fastify.put<{ Body: SettingsBody; Params: SettingsParams }>(
+    '/api/settings/:id',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: {
+            id: { type: 'string' },
+          },
+        },
+        body: {
+          type: 'object',
+          required: ['gtm_container_id', 'ga_measurement_id'],
+          properties: {
+            gtm_container_id: { type: 'string' },
+            ga_measurement_id: { type: 'string' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user.user_id;
+      const settingId = parseInt(request.params.id, 10);
+      const { gtm_container_id, ga_measurement_id } = request.body;
+
+      // Validate GTM Container ID
+      if (!gtm_container_id.startsWith('GTM-')) {
+        return reply.code(400).send({
+          error: 'Invalid GTM Container ID',
+          message: 'GTM Container ID must start with "GTM-"',
+        });
       }
+
+      // Validate GA4 Measurement ID
+      if (!ga_measurement_id.startsWith('G-')) {
+        return reply.code(400).send({
+          error: 'Invalid GA4 Measurement ID',
+          message: 'GA4 Measurement ID must start with "G-"',
+        });
+      }
+
+      // Check if the setting exists and belongs to the user
+      const existingSetting = fastify.db
+        .prepare(
+          `
+      SELECT id FROM user_settings WHERE id = ? AND user_id = ?
+    `
+        )
+        .get(settingId, userId);
+
+      if (!existingSetting) {
+        return reply.code(404).send({
+          error: 'Setting not found',
+          message: 'Setting does not exist or does not belong to you',
+        });
+      }
+
+      // Update the setting
+      fastify.db
+        .prepare(
+          `
+        UPDATE user_settings
+        SET gtm_container_id = ?, ga_measurement_id = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND user_id = ?
+      `
+        )
+        .run(gtm_container_id, ga_measurement_id, settingId, userId);
 
       // Fetch and return updated settings
       const updatedSettings = fastify.db
         .prepare(
           `
-      SELECT gtm_container_id, ga_measurement_id, updated_at
+      SELECT id, gtm_container_id, ga_measurement_id, updated_at
       FROM user_settings
-      WHERE user_id = ?
+      WHERE id = ?
     `
         )
-        .get(userId);
+        .get(settingId);
 
       return reply.send(updatedSettings);
+    }
+  );
+
+  // DELETE /api/settings/:id - Delete a specific setting
+  fastify.delete<{ Params: SettingsParams }>(
+    '/api/settings/:id',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: {
+            id: { type: 'string' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user.user_id;
+      const settingId = parseInt(request.params.id, 10);
+
+      // Check if the setting exists and belongs to the user
+      const existingSetting = fastify.db
+        .prepare(
+          `
+      SELECT id FROM user_settings WHERE id = ? AND user_id = ?
+    `
+        )
+        .get(settingId, userId);
+
+      if (!existingSetting) {
+        return reply.code(404).send({
+          error: 'Setting not found',
+          message: 'Setting does not exist or does not belong to you',
+        });
+      }
+
+      // Delete the setting
+      fastify.db
+        .prepare(
+          `
+        DELETE FROM user_settings WHERE id = ? AND user_id = ?
+      `
+        )
+        .run(settingId, userId);
+
+      return reply.code(204).send();
     }
   );
 };
