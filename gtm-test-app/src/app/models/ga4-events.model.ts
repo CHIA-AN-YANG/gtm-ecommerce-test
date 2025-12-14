@@ -27,18 +27,20 @@ export interface GA4Item {
 
 export interface GA4EcommerceEvent {
   event: GA4EventType;
-  ecommerce: {
-    currency?: string;
-    value?: number;
-    transaction_id?: string;
-    shipping?: number;
-    tax?: number;
-    payment_type?: string;
-    shipping_tier?: string;
-    items: GA4Item[];
-    item_list_id?: string;
-    item_list_name?: string;
-  };
+  ecommerce: GA4ECommerceEventPayload;
+}
+
+export interface GA4ECommerceEventPayload {
+  currency?: string;
+  value?: number;
+  transaction_id?: string;
+  shipping?: number;
+  tax?: number;
+  payment_type?: string;
+  shipping_tier?: string;
+  items: GA4Item[];
+  item_list_id?: string;
+  item_list_name?: string;
 }
 
 export interface EventConfig {

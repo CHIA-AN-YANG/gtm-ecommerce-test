@@ -1,0 +1,264 @@
+{
+  "events": {
+    "view_item_list": {
+      "item_list_id": { "required": false, "default": "list_spring_collection_2026" },
+      "item_list_name": { "required": false, "default": "Spring Collection 2026" },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 1,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "select_item": {
+      "item_list_id": { "required": false, "default": "list_spring_collection_2026" },
+      "item_list_name": { "required": false, "default": "Spring Collection 2026" },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 1,
+            "currency": "EUR"
+          }
+        ]
+      },
+      "index": { "required": false, "default": 1 }
+    },
+    "view_item": {
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": false, "default": 199.99 },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 1,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "add_to_cart": {
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": false, "default": 199.99 },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 1,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "remove_from_cart": {
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": false, "default": 199.99 },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 1,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "view_cart": {
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": false, "default": 399.98 },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 2,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "begin_checkout": {
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": false, "default": 399.98 },
+      "coupon": { "required": false, "default": "SPRINGSALE10" },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 2,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "add_shipping_info": {
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": false, "default": 399.98 },
+      "shipping_tier": { "required": false, "default": "Standard Delivery" },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 2,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "add_payment_info": {
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": false, "default": 399.98 },
+      "payment_type": { "required": false, "default": "Credit Card" },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 2,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "purchase": {
+      "transaction_id": { "required": true, "default": "T20251214-001" },
+      "affiliation": { "required": false, "default": "Euro Department Store" },
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": true, "default": 399.98 },
+      "tax": { "required": false, "default": 32.00 },
+      "shipping": { "required": false, "default": 10.00 },
+      "coupon": { "required": false, "default": "SPRINGSALE10" },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 2,
+            "currency": "EUR"
+          }
+        ]
+      }
+    },
+    "refund": {
+      "transaction_id": { "required": true, "default": "T20251214-001" },
+      "currency": { "required": true, "default": "EUR" },
+      "value": { "required": true, "default": 199.99 },
+      "items": {
+        "required": true,
+        "default": [
+          {
+            "item_id": "SKU12345",
+            "item_name": "Men's Leather Jacket",
+            "item_brand": "EuroFashion",
+            "item_category": "Clothing",
+            "item_category2": "Men",
+            "item_category3": "Jackets",
+            "item_variant": "Black / L",
+            "price": 199.99,
+            "quantity": 1,
+            "currency": "EUR"
+          }
+        ]
+      }
+    }
+  },
+  "item_object": {
+    "item_id": { "required": true, "default": "SKU12345" },
+    "item_name": { "required": true, "default": "Men's Leather Jacket" },
+    "affiliation": { "required": false, "default": "Euro Department Store" },
+    "coupon": { "required": false, "default": "SPRINGSALE10" },
+    "currency": { "required": false, "default": "EUR" },
+    "discount": { "required": false, "default": 0 },
+    "index": { "required": false, "default": 1 },
+    "item_brand": { "required": false, "default": "EuroFashion" },
+    "item_category": { "required": false, "default": "Clothing" },
+    "item_category2": { "required": false, "default": "Men" },
+    "item_category3": { "required": false, "default": "Jackets" },
+    "item_category4": { "required": false, "default": "" },
+    "item_category5": { "required": false, "default": "" },
+    "item_variant": { "required": false, "default": "Black / L" },
+    "location_id": { "required": false, "default": "Berlin Store #01" },
+    "price": { "required": true, "default": 199.99 },
+    "quantity": { "required": true, "default": 1 }
+  }
+}

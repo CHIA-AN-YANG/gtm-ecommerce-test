@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EventSelectorComponent } from './components/event-selector.component';
-import { EventFormComponent } from './components/event-form.component';
+import { EventFormComponent } from './components/event-form/event-form.component';
 import { PayloadPreviewComponent } from './components/payload-preview.component';
 import { EventConfig, GA4EcommerceEvent, GA4EventType } from './models/ga4-events.model';
 import { GtmService } from './services/gtm.service';

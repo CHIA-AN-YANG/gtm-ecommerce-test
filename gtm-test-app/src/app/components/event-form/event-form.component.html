@@ -1,0 +1,123 @@
+<div class="event-form" *ngIf="eventConfig">
+  <div class="form-header">
+    <h3>{{ eventConfig.displayName }} Form</h3>
+    <button type="button" (click)="fillWithDefaults()" class="fillout-button">✨ Fill Out</button>
+  </div>
+
+  <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+    <!-- Event-specific fields -->
+    <div class="form-section">
+      <h4>Event Parameters</h4>
+
+      <!-- Currency (if required) -->
+      <div class="form-group" *ngIf="requiresField('currency')">
+        <label>Currency *</label>
+        <input type="text" formControlName="currency" placeholder="USD" />
+        <div
+          *ngIf="eventForm.get('currency')?.invalid && eventForm.get('currency')?.touched"
+          class="error"
+        >
+          Currency is required
+        </div>
+      </div>
+
+      <!-- Value (if required) -->
+      <div class="form-group" *ngIf="requiresField('value')">
+        <label>Value *</label>
+        <input type="number" step="0.01" formControlName="value" placeholder="0.00" />
+        <div
+          *ngIf="eventForm.get('value')?.invalid && eventForm.get('value')?.touched"
+          class="error"
+        >
+          Value is required
+        </div>
+      </div>
+
+      <!-- Transaction ID (if required) -->
+      <div class="form-group" *ngIf="requiresField('transaction_id')">
+        <label>Transaction ID *</label>
+        <input type="text" formControlName="transaction_id" placeholder="T12345" />
+        <div
+          *ngIf="
+            eventForm.get('transaction_id')?.invalid && eventForm.get('transaction_id')?.touched
+          "
+          class="error"
+        >
+          Transaction ID is required
+        </div>
+      </div>
+
+      <!-- Shipping (if optional) -->
+      <div class="form-group" *ngIf="hasOptionalField('shipping')">
+        <label>Shipping</label>
+        <input type="number" step="0.01" formControlName="shipping" placeholder="0.00" />
+      </div>
+
+      <!-- Tax (if optional) -->
+      <div class="form-group" *ngIf="hasOptionalField('tax')">
+        <label>Tax</label>
+        <input type="number" step="0.01" formControlName="tax" placeholder="0.00" />
+      </div>
+
+      <!-- Payment Type (if required) -->
+      <div class="form-group" *ngIf="requiresField('payment_type')">
+        <label>Payment Type *</label>
+        <input type="text" formControlName="payment_type" placeholder="Credit Card" />
+        <div
+          *ngIf="eventForm.get('payment_type')?.invalid && eventForm.get('payment_type')?.touched"
+          class="error"
+        >
+          Payment type is required
+        </div>
+      </div>
+
+      <!-- Shipping Tier (if required) -->
+      <div class="form-group" *ngIf="requiresField('shipping_tier')">
+        <label>Shipping Tier *</label>
+        <input type="text" formControlName="shipping_tier" placeholder="Ground" />
+        <div
+          *ngIf="eventForm.get('shipping_tier')?.invalid && eventForm.get('shipping_tier')?.touched"
+          class="error"
+        >
+          Shipping tier is required
+        </div>
+      </div>
+
+      <!-- Item List ID (if optional) -->
+      <div class="form-group" *ngIf="hasOptionalField('item_list_id')">
+        <label>Item List ID</label>
+        <input type="text" formControlName="item_list_id" placeholder="related_products" />
+      </div>
+
+      <!-- Item List Name (if optional) -->
+      <div class="form-group" *ngIf="hasOptionalField('item_list_name')">
+        <label>Item List Name</label>
+        <input type="text" formControlName="item_list_name" placeholder="Related Products" />
+      </div>
+    </div>
+
+    <!-- Items Array -->
+    <div class="form-section">
+      <app-item-editor [parentForm]="eventForm"></app-item-editor>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-actions">
+      <button
+        type="button"
+        (click)="onPreview()"
+        class="preview-button"
+        [disabled]="eventForm.invalid"
+      >
+        Preview Payload
+      </button>
+      <button type="submit" class="submit-button" [disabled]="eventForm.invalid || isSubmitting">
+        Push to DataLayer
+      </button>
+    </div>
+
+    <div *ngIf="eventForm.invalid && eventForm.touched" class="form-error">
+      Please fill in all required fields and add at least one item.
+    </div>
+  </form>
+</div>
