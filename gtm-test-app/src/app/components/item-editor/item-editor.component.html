@@ -1,0 +1,45 @@
+<div class="item-editor">
+  <div class="header">
+    <h3>Items Array</h3>
+    <button type="button" (click)="addItem()" class="add-button">+ Add Item</button>
+  </div>
+
+  @if (items.length === 0) {
+  <div class="empty-state">No items added yet. Click "Add Item" to begin.</div>
+  } @for (item of items.controls; track i; let i = $index) {
+  <div class="item-card" [formGroup]="getItemGroup(i)">
+    <div class="item-header">
+      <h4>Item {{ i + 1 }}</h4>
+      <div class="item-actions">
+        <button type="button" (click)="fillItemDefaults(i)" class="fillout-button">✨ Fill Out</button>
+        <button type="button" (click)="removeItem(i)" class="remove-button">Remove</button>
+      </div>
+    </div>
+
+    <div class="item-fields">
+      <div class="form-row">
+        @for (field of itemConfig; track field.name) {
+        <div class="form-group">
+          <label>
+            {{ field.label }}
+            @if (field.required) {
+            <span class="required">*</span>
+            }
+          </label>
+          <input
+            [type]="field.type"
+            [formControlName]="field.name"
+            [placeholder]="field.placeholder || ''"
+            [step]="field.type === 'number' ? '0.01' : undefined"
+          />
+          @if (getItemGroup(i).get(field.name)?.invalid && getItemGroup(i).get(field.name)?.touched)
+          {
+          <div class="error">{{ field.label }} is required</div>
+          }
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+</div>

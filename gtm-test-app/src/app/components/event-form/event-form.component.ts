@@ -1,19 +1,36 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { EventConfig, GA4EcommerceEvent, GA4Item } from '../../models/ga4-events.model';
-import { ItemEditorComponent } from '../item-editor.component';
-import eventParameters from '../../../../public/json/ecommerce-event-parameters.json';
+import {
+  EventParameter,
+  GA4EcommerceEvent,
+  GA4EventType,
+  GA4Item,
+} from '../../models/ga4-events.model';
+import { ItemEditorComponent } from '../item-editor/item-editor.component';
+import eventSchema from '../../../../public/json/ecommerce-event-parameters.json';
 
 @Component({
   selector: 'app-event-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ItemEditorComponent],
+  imports: [ReactiveFormsModule, ItemEditorComponent],
   templateUrl: 'event-form.component.html',
   styleUrls: ['event-form.component.css'],
 })
 export class EventFormComponent implements OnChanges {
-  @Input() eventConfig!: EventConfig;
+  readonly currencyOptions = eventSchema.currency_options;
+  readonly fields = [
+    'currency',
+    'value',
+    'transaction_id',
+    'shipping',
+    'tax',
+    'payment_type',
+    'shipping_tier',
+    'item_list_id',
+    'item_list_name',
+  ];
+  @Input() eventParameters: EventParameter[] = [];
+  @Input() eventName!: string;
   @Input() isSubmitting: boolean = false;
   @Output() formSubmit = new EventEmitter<GA4EcommerceEvent>();
   @Output() preview = new EventEmitter<GA4EcommerceEvent>();
@@ -25,62 +42,49 @@ export class EventFormComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['eventConfig'] && this.eventConfig) {
+    if (changes['eventParameters'] && this.eventParameters.length) {
       this.initForm();
     }
   }
 
   initForm(): void {
-    this.eventForm = this.fb.group({
-      currency: [''],
-      value: [0],
-      transaction_id: [''],
-      shipping: [0],
-      tax: [0],
-      payment_type: [''],
-      shipping_tier: [''],
-      item_list_id: [''],
-      item_list_name: [''],
-      items: this.fb.array([]),
+    let controls: { [key: string]: any } = {};
+    this.eventParameters.forEach((config: EventParameter) => {
+      const validators = [];
+      if (config.required) {
+        validators.push(Validators.required);
+      }
+      if (config.type === 'number') {
+        validators.push(Validators.pattern(/^-?(0|[1-9]\d*)?$/));
+      }
+      if (config.options === 'currency_options') {
+        config.options = eventSchema.currency_options;
+      }
+      controls[config.name] = [{ value: null, disabled: false }, validators];
     });
+    controls['items'] = this.fb.array([]);
 
-    // Apply validators based on event config
-    if (this.eventConfig) {
-      this.applyValidators();
-    }
+    this.eventForm = this.fb.group(controls);
+  }
+
+  requiresField(fieldName: string): boolean {
+    const control = this.eventForm.get(fieldName);
+    return !!control;
+  }
+
+  getFieldOptions(field: EventParameter): { label: string; value: any }[] | null {
+    return Array.isArray(field.options) ? field.options : null;
+  }
+
+  requiresValidator(fieldName: string): boolean {
+    const control = this.eventForm.get(fieldName);
+    return control ? control.hasValidator(Validators.required) : false;
   }
 
   applyValidators(): void {
-    const fields = this.eventConfig.requiredFields;
-
-    if (fields.includes('currency')) {
-      this.eventForm.get('currency')?.setValidators([Validators.required]);
-    }
-    if (fields.includes('value')) {
-      this.eventForm.get('value')?.setValidators([Validators.required, Validators.min(0)]);
-    }
-    if (fields.includes('transaction_id')) {
-      this.eventForm.get('transaction_id')?.setValidators([Validators.required]);
-    }
-    if (fields.includes('payment_type')) {
-      this.eventForm.get('payment_type')?.setValidators([Validators.required]);
-    }
-    if (fields.includes('shipping_tier')) {
-      this.eventForm.get('shipping_tier')?.setValidators([Validators.required]);
-    }
-
-    // Update validity
     Object.keys(this.eventForm.controls).forEach((key) => {
       this.eventForm.get(key)?.updateValueAndValidity();
     });
-  }
-
-  requiresField(field: string): boolean {
-    return this.eventConfig?.requiredFields.includes(field) || false;
-  }
-
-  hasOptionalField(field: string): boolean {
-    return this.eventConfig?.optionalFields.includes(field) || false;
   }
 
   buildEventPayload(): GA4EcommerceEvent {
@@ -105,18 +109,17 @@ export class EventFormComponent implements OnChanges {
     };
 
     // Add fields based on what's filled
-    if (formValue.currency) ecommerce.currency = formValue.currency;
-    if (formValue.value) ecommerce.value = formValue.value;
-    if (formValue.transaction_id) ecommerce.transaction_id = formValue.transaction_id;
-    if (formValue.shipping) ecommerce.shipping = formValue.shipping;
-    if (formValue.tax) ecommerce.tax = formValue.tax;
-    if (formValue.payment_type) ecommerce.payment_type = formValue.payment_type;
-    if (formValue.shipping_tier) ecommerce.shipping_tier = formValue.shipping_tier;
-    if (formValue.item_list_id) ecommerce.item_list_id = formValue.item_list_id;
-    if (formValue.item_list_name) ecommerce.item_list_name = formValue.item_list_name;
+    const additionalFields: any = {};
+    for (const field of this.fields) {
+      if (formValue[field]) {
+        additionalFields[field] = formValue[field];
+      }
+    }
+
+    Object.assign(ecommerce, additionalFields);
 
     return {
-      event: this.eventConfig.name,
+      event: this.eventName as GA4EventType,
       ecommerce,
     };
   }
@@ -139,27 +142,15 @@ export class EventFormComponent implements OnChanges {
   }
 
   fillWithDefaults(): void {
-    const eventName = this.eventConfig.name;
-    const eventData = (eventParameters as any).events[eventName];
+    const eventName = this.eventName;
+    const eventData = (eventSchema as any).events[eventName];
 
     if (!eventData) return;
 
     // Fill event parameters from JSON
-    const fields = [
-      'currency',
-      'value',
-      'transaction_id',
-      'shipping',
-      'tax',
-      'payment_type',
-      'shipping_tier',
-      'item_list_id',
-      'item_list_name',
-    ];
-
     const patch: Record<string, any> = {};
 
-    fields.forEach((field) => {
+    this.fields.forEach((field) => {
       if (eventData[field]?.default !== undefined) {
         patch[field] = eventData[field].default;
       }

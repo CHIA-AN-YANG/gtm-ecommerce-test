@@ -1,5 +1,7 @@
 // GA4 Ecommerce Event Types and Interfaces
 
+import { ValidatorFn } from '@angular/forms';
+
 export type GA4EventType =
   | 'view_item_list'
   | 'select_item'
@@ -50,6 +52,21 @@ export interface EventConfig {
   category: GA4EventCategory;
   requiredFields: string[];
   optionalFields: string[];
+}
+export interface ParameterConfig {
+  events: Record<GA4EventType, EventParameter[]>;
+  item_object: EventParameter;
+  currency_options: { label: string; value: string }[];
+}
+
+export interface EventParameter {
+  name: string;
+  type: 'text' | 'number' | 'email' | 'select' | 'checkbox';
+  required: boolean;
+  label: string;
+  placeholder?: string;
+  defaultValue?: any;
+  options?: { label: string; value: any }[] | string;
 }
 export const GA4_EVENT_CONFIGS: EventConfig[] = [
   // Product Discovery & Engagement

@@ -13,8 +13,9 @@
     <div class="left-panel">
       <app-event-selector (eventSelected)="onEventSelected($event)"></app-event-selector>
       <app-event-form
-        *ngIf="selectedEvent"
-        [eventConfig]="selectedEvent"
+        *ngIf="selectedEventName && selectedEventParameters"
+        [eventParameters]="selectedEventParameters"
+        [eventName]="selectedEventName"
         [isSubmitting]="isSubmitting"
         (preview)="onPreview($event)"
         (formSubmit)="onFormSubmit($event)"

@@ -9,9 +9,14 @@ import { GA4EventType, GA4_EVENT_CONFIGS, EventConfig } from '../models/ga4-even
   imports: [CommonModule, FormsModule],
   template: `
     <div class="event-selector">
-      <h2>Select GA4 Ecommerce Event</h2>
+      <div class="header">
+        <h2>Select GA4 Ecommerce Event</h2>
+        <button type="button" (click)="toggleCategories()" class="toggle-button">
+          {{ isCollapsed ? '+' : '−' }}
+        </button>
+      </div>
 
-      <div class="event-categories">
+      <div class="event-categories" [class.collapsed]="isCollapsed">
         <div *ngFor="let category of categories" class="category-section">
           <h3>{{ categoryNames[category] }}</h3>
           <div class="event-buttons">
@@ -47,8 +52,48 @@ import { GA4EventType, GA4_EVENT_CONFIGS, EventConfig } from '../models/ga4-even
       }
 
       h2 {
-        margin-top: 0;
+        margin: 0;
         color: #333;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .toggle-button {
+        width: 32px;
+        height: 32px;
+        padding: 0 0 3px;
+        background: white;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 1;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .toggle-button:hover {
+        border-color: #4285f4;
+        background: #f0f7ff;
+      }
+
+      .event-categories {
+        max-height: 2000px;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+        opacity: 1;
+      }
+
+      .event-categories.collapsed {
+        max-height: 0;
+        opacity: 0;
       }
 
       .category-section {
@@ -122,6 +167,7 @@ export class EventSelectorComponent {
 
   selectedEvent: GA4EventType | null = null;
   selectedEventConfig: EventConfig | null = null;
+  isCollapsed = false;
 
   categories: ('discovery' | 'cart' | 'checkout' | 'transaction')[] = [
     'discovery',
@@ -145,5 +191,9 @@ export class EventSelectorComponent {
     this.selectedEvent = event.name;
     this.selectedEventConfig = event;
     this.eventSelected.emit(event);
+  }
+
+  toggleCategories(): void {
+    this.isCollapsed = !this.isCollapsed;
   }
 }
