@@ -161,7 +161,7 @@
         "label": "Shipping Method",
         "placeholder": "Select shipping option",
         "defaultValue": "standard",
-        "required": false,
+        "required": true,
         "options": [
           { "label": "Standard Delivery", "value": "standard" },
           { "label": "Express Delivery", "value": "express" },
@@ -177,7 +177,7 @@
         "label": "Payment Method",
         "placeholder": "Select payment method",
         "defaultValue": "credit_card",
-        "required": false,
+        "required": true,
         "options": [
           { "label": "Credit Card", "value": "credit_card" },
           { "label": "PayPal", "value": "paypal" },
