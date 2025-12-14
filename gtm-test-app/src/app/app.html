@@ -3,29 +3,26 @@
     <h1>{{ title }}</h1>
     <p class="subtitle">Test and validate GA4 ecommerce events with GTM</p>
   </header>
-
-  <div class="success-banner" *ngIf="showSuccessMessage">
-    ✓ Event "{{ lastPushedEvent }}" successfully pushed to dataLayer
+  <div class="toast" *ngIf="successMessage$ | async as message">
+    <span class="toast-icon">✓</span>
+    <span class="toast-message"
+      >Event <strong>{{ message }}</strong> has been pushed to dataLayer</span
+    >
   </div>
-
   <div class="main-content">
     <div class="left-panel">
-      <app-event-selector
-        (eventSelected)="onEventSelected($event)"
-      ></app-event-selector>
-
+      <app-event-selector (eventSelected)="onEventSelected($event)"></app-event-selector>
       <app-event-form
         *ngIf="selectedEvent"
         [eventConfig]="selectedEvent"
+        [isSubmitting]="isSubmitting"
         (preview)="onPreview($event)"
         (formSubmit)="onFormSubmit($event)"
       ></app-event-form>
     </div>
 
     <div class="right-panel">
-      <app-payload-preview
-        [payload]="previewPayload"
-      ></app-payload-preview>
+      <app-payload-preview [payload]="previewPayload"></app-payload-preview>
     </div>
   </div>
 </div>

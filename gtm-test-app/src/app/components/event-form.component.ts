@@ -123,7 +123,11 @@ import { ItemEditorComponent } from './item-editor.component';
           >
             Preview Payload
           </button>
-          <button type="submit" class="submit-button" [disabled]="eventForm.invalid">
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="eventForm.invalid || isSubmitting"
+          >
             Push to DataLayer
           </button>
         </div>
@@ -253,6 +257,7 @@ import { ItemEditorComponent } from './item-editor.component';
 })
 export class EventFormComponent implements OnChanges {
   @Input() eventConfig!: EventConfig;
+  @Input() isSubmitting: boolean = false;
   @Output() formSubmit = new EventEmitter<GA4EcommerceEvent>();
   @Output() preview = new EventEmitter<GA4EcommerceEvent>();
 

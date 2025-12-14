@@ -13,6 +13,8 @@ export type GA4EventType =
   | 'purchase'
   | 'refund';
 
+export type GA4EventCategory = 'discovery' | 'cart' | 'checkout' | 'transaction';
+
 export interface GA4Item {
   item_id: string;
   item_name: string;
@@ -43,11 +45,10 @@ export interface EventConfig {
   name: GA4EventType;
   displayName: string;
   description: string;
-  category: 'discovery' | 'cart' | 'checkout' | 'transaction';
+  category: GA4EventCategory;
   requiredFields: string[];
   optionalFields: string[];
 }
-
 export const GA4_EVENT_CONFIGS: EventConfig[] = [
   // Product Discovery & Engagement
   {
@@ -142,7 +143,6 @@ export const GA4_EVENT_CONFIGS: EventConfig[] = [
     optionalFields: ['items'],
   },
 ];
-
 declare global {
   interface Window {
     dataLayer: any[];
