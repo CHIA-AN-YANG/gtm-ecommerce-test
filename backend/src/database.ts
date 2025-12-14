@@ -17,10 +17,10 @@ export function initDatabase() {
   }
 
   const db = new Database(DB_PATH);
-  
+
   // Enable foreign keys
   db.pragma('foreign_keys = ON');
-  
+
   // Create tables if they don't exist
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -30,18 +30,18 @@ export function initDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
-  
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS user_settings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL UNIQUE,
+      user_id INTEGER NOT NULL,
       gtm_container_id TEXT,
       ga_measurement_id TEXT,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
   `);
-  
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS events (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,10 +52,10 @@ export function initDatabase() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
   `);
-  
+
   console.log('✓ Database initialized successfully');
   console.log(`✓ Database location: ${DB_PATH}`);
-  
+
   return db;
 }
 
