@@ -1,5 +1,9 @@
 import Fastify from 'fastify';
+import fastifyJWT from '@fastify/jwt';
 import { initDatabase } from './database.js';
+import { config } from './config.js';
+import authPlugin from './auth/plugin.js';
+import authRoutes from './auth/routes.js';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -16,6 +20,20 @@ async function buildServer() {
   
   // Make database available throughout the app
   fastify.decorate('db', db);
+
+  // Register JWT plugin
+  await fastify.register(fastifyJWT, {
+    secret: config.jwt.secret,
+    sign: {
+      expiresIn: config.jwt.expiresIn,
+    },
+  });
+
+  // Register auth plugin (provides authenticate decorator)
+  await fastify.register(authPlugin);
+
+  // Register auth routes
+  await fastify.register(authRoutes, { prefix: '/auth' });
 
   // Health check endpoint
   fastify.get('/health', async (request, reply) => {
