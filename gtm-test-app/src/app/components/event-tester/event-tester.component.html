@@ -1,0 +1,24 @@
+<div class="toast" *ngIf="successMessage$ | async as message">
+  <span class="toast-icon">✓</span>
+  <span class="toast-message"
+    >Event <strong>{{ message }}</strong> has been pushed to dataLayer</span
+  >
+</div>
+
+<div class="event-tester-content">
+  <div class="left-panel">
+    <app-event-selector (eventSelected)="onEventSelected($event)"></app-event-selector>
+    <app-event-form
+      *ngIf="selectedEventName && selectedEventParameters"
+      [eventParameters]="selectedEventParameters"
+      [eventName]="selectedEventName"
+      [isSubmitting]="isSubmitting"
+      (preview)="onPreview($event)"
+      (formSubmit)="onFormSubmit($event)"
+    ></app-event-form>
+  </div>
+
+  <div class="right-panel">
+    <app-payload-preview [payload]="previewPayload"></app-payload-preview>
+  </div>
+</div>

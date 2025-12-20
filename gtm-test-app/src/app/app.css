@@ -1,15 +1,13 @@
 .app-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 20px;
+  min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .app-header {
   text-align: center;
-  margin-bottom: 40px;
-  padding: 30px 0;
+  padding: 30px 20px;
   border-bottom: 2px solid #e0e0e0;
+  background-color: #fff;
 }
 
 .app-header h1 {
@@ -24,72 +22,6 @@
   font-size: 16px;
 }
 
-.toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #34a853;
-  color: white;
-  padding: 16px 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  z-index: 1000;
-  animation: slideInRight 0.5s ease-out;
-}
-
-.toast-icon {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.toast-message {
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.toast-message strong {
-  font-weight: 600;
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateY(100px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .main-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-}
-
-.left-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.right-panel {
-  position: sticky;
-  top: 20px;
-  height: fit-content;
-}
-
-@media (max-width: 1024px) {
-  .main-content {
-    grid-template-columns: 1fr;
-  }
-
-  .right-panel {
-    position: static;
-  }
+  /* Router outlet content will be displayed here */
 }
