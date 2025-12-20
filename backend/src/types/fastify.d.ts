@@ -4,7 +4,17 @@ import '@fastify/jwt';
 declare module 'fastify' {
   interface FastifyInstance {
     db: Database.Database;
-    authenticate: (request: any, reply: any) => Promise<void>;
+    authenticate: (
+      request: FastifyRequest,
+      reply: FastifyReply
+    ) => Promise<void>;
+  }
+
+  interface FastifyRequest {
+    user: {
+      user_id?: string;
+      email?: string;
+    };
   }
 }
 

@@ -11,6 +11,16 @@ interface LoginBody {
   password: string;
 }
 
+const TOKEN_COOKIE_NAME = 'auth_token';
+
+const COOKIE_CONFIG = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'none' as const,
+  path: '/',
+  maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+};
+
 const authRoutes: FastifyPluginAsync = async (fastify) => {
   // Register endpoint
   fastify.post<{ Body: RegisterBody }>('/register', async (request, reply) => {
@@ -22,7 +32,9 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     if (password.length < 6) {
-      return reply.code(400).send({ error: 'Password must be at least 6 characters' });
+      return reply
+        .code(400)
+        .send({ error: 'Password must be at least 6 characters' });
     }
 
     try {
@@ -42,14 +54,19 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         email,
       });
 
+      // Set token in HttpOnly, Secure cookie
+      reply.setCookie(TOKEN_COOKIE_NAME, token, COOKIE_CONFIG);
+
       return reply.code(201).send({
         user_id: result.lastInsertRowid,
         email,
-        token,
       });
     } catch (error: any) {
       // Handle duplicate email
-      if (error.code === 'SQLITE_CONSTRAINT' || error.message.includes('UNIQUE')) {
+      if (
+        error.code === 'SQLITE_CONSTRAINT' ||
+        error.message.includes('UNIQUE')
+      ) {
         return reply.code(409).send({ error: 'Email already registered' });
       }
 
@@ -82,7 +99,10 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       // Verify password
-      const isValidPassword = await verifyPassword(password, user.password_hash);
+      const isValidPassword = await verifyPassword(
+        password,
+        user.password_hash
+      );
 
       if (!isValidPassword) {
         return reply.code(401).send({ error: 'Invalid email or password' });
@@ -94,14 +114,40 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         email: user.email,
       });
 
+      // Set token in HttpOnly, Secure cookie
+      reply.setCookie(TOKEN_COOKIE_NAME, token, COOKIE_CONFIG);
+
       return reply.send({
         user_id: user.id,
         email: user.email,
-        token,
       });
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ error: 'Failed to login' });
+    }
+  });
+
+  // Logout endpoint
+  fastify.post(
+    '/logout',
+    {
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      // Clear the token cookie
+      reply.clearCookie(TOKEN_COOKIE_NAME);
+
+      return reply.send({ message: 'Logged out successfully' });
+    }
+  );
+
+  // Auth status endpoint
+  fastify.get('/status', async (request, reply) => {
+    try {
+      await request.jwtVerify();
+      return reply.send({ authenticated: true });
+    } catch (error) {
+      return reply.send({ authenticated: false });
     }
   });
 };

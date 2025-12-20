@@ -3,14 +3,15 @@ import fp from 'fastify-plugin';
 
 const authPluginImpl: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('authenticate', async function (request: any, reply: any) {
+    const token = request.cookies.auth_token;
+    if (!token) {
+      return reply.code(401).send({ message: 'Unauthorized' });
+    }
+
     try {
-      await request.jwtVerify();
-      request.user = {
-        user_id: request.user.user_id,
-        email: request.user.email,
-      };
-    } catch (err) {
-      reply.code(401).send({ error: 'Unauthorized' });
+      request.user = fastify.jwt.verify(token);
+    } catch {
+      return reply.code(401).send({ message: 'Invalid token' });
     }
   });
 };

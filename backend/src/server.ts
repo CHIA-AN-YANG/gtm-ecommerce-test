@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
 import fastifyJWT from '@fastify/jwt';
+import fastifyCookie from '@fastify/cookie';
 import { initDatabase } from './database.js';
 import { config } from './config.js';
 import authPlugin from './auth/plugin.js';
@@ -25,15 +26,24 @@ async function buildServer() {
   // Make database available throughout the app
   fastify.decorate('db', db);
 
+  // Register cookie plugin
+  await fastify.register(fastifyCookie);
+
   // Register JWT plugin
   await fastify.register(fastifyJWT, {
     secret: config.jwt.secret,
     sign: {
       expiresIn: config.jwt.expiresIn,
     },
+    cookie: {
+      cookieName: 'auth_token',
+      signed: false,
+    },
   });
-  fastify.register(cors, {
+
+  await fastify.register(cors, {
     origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:4200'],
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });

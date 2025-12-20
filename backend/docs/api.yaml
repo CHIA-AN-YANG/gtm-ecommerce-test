@@ -45,9 +45,6 @@ paths:
                   email:
                     type: string
                     example: user@example.com
-                  token:
-                    type: string
-                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         '400':
           description: Invalid input.
           content:
@@ -108,9 +105,6 @@ paths:
                   email:
                     type: string
                     example: user@example.com
-                  token:
-                    type: string
-                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         '400':
           description: Invalid input.
           content:
