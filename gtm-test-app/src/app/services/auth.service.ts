@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 export interface LoginRequest {
   email: string;
@@ -24,72 +24,99 @@ export interface AuthResponse {
 })
 export class AuthService {
   private baseUrl = environment.apiUrl;
-  private tokenKey = 'auth_token';
   private userKey = 'auth_user';
+  private isAuthenticatedState = false;
 
   constructor(private http: HttpClient) {}
 
   login(data: LoginRequest): Observable<AuthResponse> {
-    // Check if using default user credentials
-    if (
-      data.email === environment.defaultUser.email &&
-      data.password === environment.defaultUser.password
-    ) {
-      const defaultResponse: AuthResponse = {
-        token: 'default-user-token',
-        user_id: 'default-user-id',
-        email: environment.defaultUser.email,
-      };
-      this.storeAuthData(defaultResponse);
-      return of(defaultResponse);
-    }
-
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, data).pipe(
-      tap((response) => this.storeAuthData(response)),
-      catchError(this.handleError)
-    );
+    return this.http
+      .post<AuthResponse>(`${this.baseUrl}/auth/login`, data, {
+        withCredentials: true,
+      })
+      .pipe(
+        tap((response) => this.storeAuthData(response)),
+        catchError(this.handleError)
+      );
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, data).pipe(
-      tap((response) => this.storeAuthData(response)),
-      catchError(this.handleError)
-    );
+    return this.http
+      .post<AuthResponse>(`${this.baseUrl}/auth/register`, data, {
+        withCredentials: true,
+      })
+      .pipe(
+        tap((response) => this.storeAuthData(response)),
+        catchError(this.handleError)
+      );
   }
 
-  logout(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(this.tokenKey);
-      localStorage.removeItem(this.userKey);
-    }
+  logout(): Observable<void> {
+    return this.http
+      .post<void>(
+        `${this.baseUrl}/auth/logout`,
+        {},
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        tap(() => {
+          this.isAuthenticatedState = false;
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.removeItem(this.userKey);
+          }
+        }),
+        catchError(() => {
+          // Clear state even if logout fails
+          this.isAuthenticatedState = false;
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.removeItem(this.userKey);
+          }
+          return of(undefined);
+        })
+      );
   }
 
   isAuthenticated(): boolean {
-    if (typeof localStorage === 'undefined') {
-      return false;
-    }
-    return !!localStorage.getItem(this.tokenKey);
+    console.log('AuthService: isAuthenticated called, state=', this.isAuthenticatedState);
+    // Return cached state, actual validation happens via HTTP requests
+    return this.isAuthenticatedState;
+  }
+
+  checkAuthStatus(): Observable<boolean> {
+    return this.http
+      .get<{ authenticated: boolean }>(`${this.baseUrl}/auth/status`, { withCredentials: true })
+      .pipe(
+        map((result) => Boolean(result.authenticated)),
+        catchError(() => {
+          return of(false);
+        })
+      );
   }
 
   private storeAuthData(response: AuthResponse): void {
-    if (typeof localStorage === 'undefined') {
-      return;
+    // Token is stored in HTTP-only cookie by the server
+    // Only store non-sensitive user info in sessionStorage
+    this.isAuthenticatedState = true;
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(
+        this.userKey,
+        JSON.stringify({
+          email: response.email,
+        })
+      );
     }
-    localStorage.setItem(this.tokenKey, response.token);
-    localStorage.setItem(
-      this.userKey,
-      JSON.stringify({
-        user_id: response.user_id,
-        email: response.email,
-      })
-    );
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An unknown error occurred';
-    if (error.error) {
-      errorMessage = error.error.message || errorMessage;
+    if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error.message) {
+      errorMessage = error.message;
     }
+    console.error('Auth error:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
 }

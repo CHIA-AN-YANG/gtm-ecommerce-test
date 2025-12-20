@@ -1,22 +1,23 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { SettingsService } from '../../services/settings.service';
 import { GtmService } from '../../services/gtm.service';
+import { AuthService } from '../../services/auth.service';
 import { Setting } from '../../models/settings.model';
 import { SettingsFormComponent } from '../settings-form/settings-form.component';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-settings-list',
   standalone: true,
-  imports: [CommonModule, SettingsFormComponent],
+  imports: [SettingsFormComponent, DatePipe, AsyncPipe],
   templateUrl: './settings-list.component.html',
   styleUrls: ['./settings-list.component.css'],
 })
 export class SettingsListComponent implements OnInit {
-  settings: Setting[] = [];
+  settings$: Observable<Setting[]> = this.settingsService.settings$;
   activeSetting: Setting | null = null;
-  isLoading = false;
   errorMessage: string | null = null;
   showForm = false;
   editingSetting: Setting | null = null;
@@ -24,6 +25,7 @@ export class SettingsListComponent implements OnInit {
   constructor(
     private settingsService: SettingsService,
     private gtmService: GtmService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
@@ -39,16 +41,10 @@ export class SettingsListComponent implements OnInit {
   }
 
   loadSettings(): void {
-    this.isLoading = true;
     this.errorMessage = null;
     this.settingsService.getSettings().subscribe({
-      next: (settings) => {
-        this.settings = settings;
-        this.isLoading = false;
-      },
       error: (err) => {
         this.errorMessage = err.message;
-        this.isLoading = false;
       },
     });
   }
@@ -67,8 +63,6 @@ export class SettingsListComponent implements OnInit {
     if (!confirm(`Are you sure you want to delete this setting (${setting.gtm_container_id})?`)) {
       return;
     }
-
-    this.isLoading = true;
     this.errorMessage = null;
     this.settingsService.deleteSetting(setting.id).subscribe({
       next: () => {
@@ -76,7 +70,6 @@ export class SettingsListComponent implements OnInit {
       },
       error: (err) => {
         this.errorMessage = err.message;
-        this.isLoading = false;
       },
     });
   }
@@ -97,8 +90,10 @@ export class SettingsListComponent implements OnInit {
   }
 
   onLogout(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
-    this.router.navigate(['/login']);
+    this.settingsService.clearActiveSetting();
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => this.router.navigate(['/login']),
+    });
   }
 }

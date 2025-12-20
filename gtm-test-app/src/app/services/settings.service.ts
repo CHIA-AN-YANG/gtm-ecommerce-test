@@ -21,49 +21,56 @@ export class SettingsService {
   }
 
   getSettings(): Observable<Setting[]> {
-    return this.http.get<Setting[]>(`${this.baseUrl}/api/settings`).pipe(
-      tap((settings) => {
-        this.settingsSubject.next(settings);
-        this.restoreActiveSetting(settings);
-      }),
+    return this.http.get<Setting[]>(`${this.baseUrl}/api/settings`, { withCredentials: true }).pipe(
+      tap((settings) => this.settingsSubject.next(settings)),
       catchError(this.handleError)
     );
   }
 
   createSetting(data: CreateSettingRequest): Observable<Setting> {
-    return this.http.post<Setting>(`${this.baseUrl}/api/settings`, data).pipe(
-      tap(() => this.refreshSettings()),
-      catchError(this.handleError)
-    );
+    return this.http
+      .post<Setting>(`${this.baseUrl}/api/settings`, data, { withCredentials: true })
+      .pipe(
+        tap(() => this.refreshSettings()),
+        catchError(this.handleError)
+      );
   }
 
   updateSetting(id: string, data: UpdateSettingRequest): Observable<Setting> {
-    return this.http.put<Setting>(`${this.baseUrl}/api/settings/${id}`, data).pipe(
-      tap(() => this.refreshSettings()),
-      catchError(this.handleError)
-    );
+    return this.http
+      .put<Setting>(`${this.baseUrl}/api/settings/${id}`, data, { withCredentials: true })
+      .pipe(
+        tap(() => this.refreshSettings()),
+        catchError(this.handleError)
+      );
   }
 
   deleteSetting(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/api/settings/${id}`).pipe(
-      tap(() => {
-        // Clear active setting if it was deleted
-        if (this.activeSettingSubject.value?.id === id) {
-          this.clearActiveSetting();
-        }
-        this.refreshSettings();
-      }),
-      catchError(this.handleError)
-    );
+    return this.http
+      .delete<void>(`${this.baseUrl}/api/settings/${id}`, { withCredentials: true })
+      .pipe(
+        tap(() => {
+          // Clear active setting if it was deleted
+          if (this.activeSettingSubject.value?.id === id) {
+            this.clearActiveSetting();
+          }
+          this.refreshSettings();
+        }),
+        catchError(this.handleError)
+      );
   }
 
   setActiveSetting(setting: Setting): void {
-    localStorage.setItem(this.activeSettingKey, setting.id);
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(this.activeSettingKey, setting.id);
+    }
     this.activeSettingSubject.next(setting);
   }
 
   clearActiveSetting(): void {
-    localStorage.removeItem(this.activeSettingKey);
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(this.activeSettingKey);
+    }
     this.activeSettingSubject.next(null);
   }
 
@@ -72,7 +79,10 @@ export class SettingsService {
   }
 
   private loadActiveSetting(): void {
-    const activeId = localStorage.getItem(this.activeSettingKey);
+    if (typeof sessionStorage === 'undefined') {
+      return;
+    }
+    const activeId = sessionStorage.getItem(this.activeSettingKey);
     if (activeId) {
       // Will be restored when settings are loaded
       this.getSettings().subscribe();
@@ -80,7 +90,10 @@ export class SettingsService {
   }
 
   private restoreActiveSetting(settings: Setting[]): void {
-    const activeId = localStorage.getItem(this.activeSettingKey);
+    if (typeof sessionStorage === 'undefined') {
+      return;
+    }
+    const activeId = sessionStorage.getItem(this.activeSettingKey);
     if (activeId) {
       const activeSetting = settings.find((s) => s.id === activeId);
       if (activeSetting) {

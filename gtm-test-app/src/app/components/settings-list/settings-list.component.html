@@ -2,31 +2,34 @@
   <div class="header">
     <h1>GTM / GA4 Settings</h1>
     <div class="header-actions">
-      <button class="btn-primary" (click)="onAdd()" *ngIf="!showForm">Add New Setting</button>
+      @if(!showForm){
+      <button class="btn-primary" (click)="onAdd()">Add New Setting</button>
+      }
       <button class="btn-secondary" (click)="onLogout()">Logout</button>
     </div>
   </div>
-
-  <div *ngIf="errorMessage" class="error-message">
+  @if(errorMessage) {
+  <p class="error-message">
     {{ errorMessage }}
-  </div>
-
-  <div *ngIf="isLoading" class="loading">Loading...</div>
-
-  <div *ngIf="showForm" class="form-overlay">
+  </p>
+  } @if((settings$ | async) === null ) {
+  <div class="loading">Loading...</div>
+  } @if(showForm){
+  <div class="form-overlay">
     <app-settings-form [setting]="editingSetting" (close)="onFormClose()"></app-settings-form>
   </div>
-
-  <div class="settings-list" *ngIf="!isLoading && !showForm">
-    <div *ngIf="settings.length === 0" class="empty-state">
-      <p>No settings found. Click "Add New Setting" to get started.</p>
-    </div>
+  } @if((settings$ | async) === null && !showForm){
+  <div class="settings-list">
+    @if((settings$ | async)?.length && (settings$ | async)!.length > 0){
 
     <div class="settings-grid">
-      <div *ngFor="let setting of settings" class="setting-card" [class.active]="isActive(setting)">
-        <div class="active-badge" *ngIf="isActive(setting)">
+      @for(setting of (settings$ | async); track setting.id){
+      <div class="setting-card" [class.active]="isActive(setting)">
+        @if(isActive(setting)){
+        <div class="active-badge">
           <span>✓ Active</span>
         </div>
+        }
         <div class="setting-info">
           <div class="setting-field">
             <label>GTM Container ID:</label>
@@ -53,6 +56,13 @@
           <button class="btn-delete" (click)="onDelete(setting)">Delete</button>
         </div>
       </div>
+      }
     </div>
+    } @else {
+    <div class="empty-state">
+      <p>No settings found. Click "Add New Setting" to get started.</p>
+    </div>
+    }
   </div>
+  }
 </div>
