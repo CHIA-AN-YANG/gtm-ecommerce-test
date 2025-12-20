@@ -17,6 +17,6 @@ export const routes: Route[] = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'settings', component: SettingsListComponent, canActivate: [AuthGuard] },
-  { path: 'events', component: EventTesterComponent },
+  { path: 'events', component: EventTesterComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: '/events', pathMatch: 'full' },
 ];

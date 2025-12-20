@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 export interface LoginRequest {
@@ -30,6 +30,20 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(data: LoginRequest): Observable<AuthResponse> {
+    // Check if using default user credentials
+    if (
+      data.email === environment.defaultUser.email &&
+      data.password === environment.defaultUser.password
+    ) {
+      const defaultResponse: AuthResponse = {
+        token: 'default-user-token',
+        user_id: 'default-user-id',
+        email: environment.defaultUser.email,
+      };
+      this.storeAuthData(defaultResponse);
+      return of(defaultResponse);
+    }
+
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, data).pipe(
       tap((response) => this.storeAuthData(response)),
       catchError(this.handleError)
@@ -44,15 +58,23 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.tokenKey);
+      localStorage.removeItem(this.userKey);
+    }
   }
 
   isAuthenticated(): boolean {
+    if (typeof localStorage === 'undefined') {
+      return false;
+    }
     return !!localStorage.getItem(this.tokenKey);
   }
 
   private storeAuthData(response: AuthResponse): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
     localStorage.setItem(this.tokenKey, response.token);
     localStorage.setItem(
       this.userKey,
