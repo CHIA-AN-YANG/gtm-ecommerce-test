@@ -1,0 +1,71 @@
+<div class="form-modal">
+  <div class="form-content">
+    <div class="form-header">
+      <h2>{{ setting ? 'Edit Setting' : 'Add New Setting' }}</h2>
+      <button class="close-btn" (click)="onCancel()">&times;</button>
+    </div>
+
+    <form [formGroup]="settingForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="gtm_container_id">GTM Container ID</label>
+        <input
+          id="gtm_container_id"
+          formControlName="gtm_container_id"
+          type="text"
+          placeholder="GTM-XXXXXXX"
+        />
+        <div
+          *ngIf="
+            settingForm.get('gtm_container_id')?.invalid &&
+            settingForm.get('gtm_container_id')?.touched
+          "
+          class="error-text"
+        >
+          <span *ngIf="settingForm.get('gtm_container_id')?.errors?.['required']">
+            GTM Container ID is required.
+          </span>
+          <span *ngIf="settingForm.get('gtm_container_id')?.errors?.['invalidGtmId']">
+            GTM Container ID must start with 'GTM-'.
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="ga_measurement_id">GA Measurement ID</label>
+        <input
+          id="ga_measurement_id"
+          formControlName="ga_measurement_id"
+          type="text"
+          placeholder="G-XXXXXXXXXX"
+        />
+        <div
+          *ngIf="
+            settingForm.get('ga_measurement_id')?.invalid &&
+            settingForm.get('ga_measurement_id')?.touched
+          "
+          class="error-text"
+        >
+          <span *ngIf="settingForm.get('ga_measurement_id')?.errors?.['required']">
+            GA Measurement ID is required.
+          </span>
+          <span *ngIf="settingForm.get('ga_measurement_id')?.errors?.['invalidGaId']">
+            GA Measurement ID must start with 'G-'.
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="isSubmitting">
+          Cancel
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="settingForm.invalid || isSubmitting">
+          {{ isSubmitting ? 'Saving...' : (setting ? 'Update' : 'Create') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,51 @@
+<div class="settings-container">
+  <div class="header">
+    <h1>GTM / GA4 Settings</h1>
+    <div class="header-actions">
+      <button class="btn-primary" (click)="onAdd()" *ngIf="!showForm">Add New Setting</button>
+      <button class="btn-secondary" (click)="onLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading">Loading...</div>
+
+  <div *ngIf="showForm" class="form-overlay">
+    <app-settings-form
+      [setting]="editingSetting"
+      (close)="onFormClose()"
+    ></app-settings-form>
+  </div>
+
+  <div class="settings-list" *ngIf="!isLoading && !showForm">
+    <div *ngIf="settings.length === 0" class="empty-state">
+      <p>No settings found. Click "Add New Setting" to get started.</p>
+    </div>
+
+    <div class="settings-grid">
+      <div *ngFor="let setting of settings" class="setting-card">
+        <div class="setting-info">
+          <div class="setting-field">
+            <label>GTM Container ID:</label>
+            <span>{{ setting.gtm_container_id }}</span>
+          </div>
+          <div class="setting-field">
+            <label>GA Measurement ID:</label>
+            <span>{{ setting.ga_measurement_id }}</span>
+          </div>
+          <div class="setting-field">
+            <label>Last Updated:</label>
+            <span>{{ setting.updated_at | date: 'medium' }}</span>
+          </div>
+        </div>
+        <div class="setting-actions">
+          <button class="btn-edit" (click)="onEdit(setting)">Edit</button>
+          <button class="btn-delete" (click)="onDelete(setting)">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
