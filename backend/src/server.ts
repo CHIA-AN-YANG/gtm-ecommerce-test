@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import Fastify from 'fastify';
 import fastifyJWT from '@fastify/jwt';
 import { initDatabase } from './database.js';
@@ -6,6 +7,7 @@ import authPlugin from './auth/plugin.js';
 import authRoutes from './auth/routes.js';
 import settingsRoutes from './settings/routes.js';
 import eventsRoutes from './events/routes.js';
+import cors from '@fastify/cors';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -18,7 +20,7 @@ async function buildServer() {
   });
 
   // Initialize database
-  const db = initDatabase();
+  const db = await initDatabase();
 
   // Make database available throughout the app
   fastify.decorate('db', db);
@@ -29,6 +31,11 @@ async function buildServer() {
     sign: {
       expiresIn: config.jwt.expiresIn,
     },
+  });
+  fastify.register(cors, {
+    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:4200'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Register auth plugin (provides authenticate decorator)
