@@ -12,12 +12,20 @@ export class SettingsService {
   private baseUrl = environment.apiUrl;
   private settingsSubject = new BehaviorSubject<Setting[]>([]);
   public settings$ = this.settingsSubject.asObservable();
+  private activeSettingKey = 'active_setting_id';
+  private activeSettingSubject = new BehaviorSubject<Setting | null>(null);
+  public activeSetting$ = this.activeSettingSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.loadActiveSetting();
+  }
 
   getSettings(): Observable<Setting[]> {
     return this.http.get<Setting[]>(`${this.baseUrl}/api/settings`).pipe(
-      tap((settings) => this.settingsSubject.next(settings)),
+      tap((settings) => {
+        this.settingsSubject.next(settings);
+        this.restoreActiveSetting(settings);
+      }),
       catchError(this.handleError)
     );
   }
@@ -38,9 +46,50 @@ export class SettingsService {
 
   deleteSetting(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/api/settings/${id}`).pipe(
-      tap(() => this.refreshSettings()),
+      tap(() => {
+        // Clear active setting if it was deleted
+        if (this.activeSettingSubject.value?.id === id) {
+          this.clearActiveSetting();
+        }
+        this.refreshSettings();
+      }),
       catchError(this.handleError)
     );
+  }
+
+  setActiveSetting(setting: Setting): void {
+    localStorage.setItem(this.activeSettingKey, setting.id);
+    this.activeSettingSubject.next(setting);
+  }
+
+  clearActiveSetting(): void {
+    localStorage.removeItem(this.activeSettingKey);
+    this.activeSettingSubject.next(null);
+  }
+
+  getActiveSetting(): Setting | null {
+    return this.activeSettingSubject.value;
+  }
+
+  private loadActiveSetting(): void {
+    const activeId = localStorage.getItem(this.activeSettingKey);
+    if (activeId) {
+      // Will be restored when settings are loaded
+      this.getSettings().subscribe();
+    }
+  }
+
+  private restoreActiveSetting(settings: Setting[]): void {
+    const activeId = localStorage.getItem(this.activeSettingKey);
+    if (activeId) {
+      const activeSetting = settings.find((s) => s.id === activeId);
+      if (activeSetting) {
+        this.activeSettingSubject.next(activeSetting);
+      } else {
+        // Active setting no longer exists
+        this.clearActiveSetting();
+      }
+    }
   }
 
   private refreshSettings(): void {

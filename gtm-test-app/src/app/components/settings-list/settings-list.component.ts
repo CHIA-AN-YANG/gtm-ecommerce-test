@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SettingsService } from '../../services/settings.service';
+import { GtmService } from '../../services/gtm.service';
 import { Setting } from '../../models/settings.model';
 import { SettingsFormComponent } from '../settings-form/settings-form.component';
 
@@ -14,15 +15,27 @@ import { SettingsFormComponent } from '../settings-form/settings-form.component'
 })
 export class SettingsListComponent implements OnInit {
   settings: Setting[] = [];
+  activeSetting: Setting | null = null;
   isLoading = false;
   errorMessage: string | null = null;
   showForm = false;
   editingSetting: Setting | null = null;
 
-  constructor(private settingsService: SettingsService, private router: Router) {}
+  constructor(
+    private settingsService: SettingsService,
+    private gtmService: GtmService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadSettings();
+    this.subscribeToActiveSetting();
+  }
+
+  subscribeToActiveSetting(): void {
+    this.settingsService.activeSetting$.subscribe((setting) => {
+      this.activeSetting = setting;
+    });
   }
 
   loadSettings(): void {
@@ -72,6 +85,15 @@ export class SettingsListComponent implements OnInit {
     this.showForm = false;
     this.editingSetting = null;
     this.loadSettings();
+  }
+
+  onSetActive(setting: Setting): void {
+    this.settingsService.setActiveSetting(setting);
+    this.gtmService.init(setting.gtm_container_id);
+  }
+
+  isActive(setting: Setting): boolean {
+    return this.activeSetting?.id === setting.id;
   }
 
   onLogout(): void {

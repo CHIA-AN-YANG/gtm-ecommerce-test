@@ -14,10 +14,7 @@
   <div *ngIf="isLoading" class="loading">Loading...</div>
 
   <div *ngIf="showForm" class="form-overlay">
-    <app-settings-form
-      [setting]="editingSetting"
-      (close)="onFormClose()"
-    ></app-settings-form>
+    <app-settings-form [setting]="editingSetting" (close)="onFormClose()"></app-settings-form>
   </div>
 
   <div class="settings-list" *ngIf="!isLoading && !showForm">
@@ -26,7 +23,10 @@
     </div>
 
     <div class="settings-grid">
-      <div *ngFor="let setting of settings" class="setting-card">
+      <div *ngFor="let setting of settings" class="setting-card" [class.active]="isActive(setting)">
+        <div class="active-badge" *ngIf="isActive(setting)">
+          <span>✓ Active</span>
+        </div>
         <div class="setting-info">
           <div class="setting-field">
             <label>GTM Container ID:</label>
@@ -38,10 +38,17 @@
           </div>
           <div class="setting-field">
             <label>Last Updated:</label>
-            <span>{{ setting.updated_at | date: 'medium' }}</span>
+            <span>{{ setting.updated_at | date : 'medium' }}</span>
           </div>
         </div>
         <div class="setting-actions">
+          <button
+            class="btn-activate"
+            (click)="onSetActive(setting)"
+            [disabled]="isActive(setting)"
+          >
+            {{ isActive(setting) ? 'Active' : 'Set Active' }}
+          </button>
           <button class="btn-edit" (click)="onEdit(setting)">Edit</button>
           <button class="btn-delete" (click)="onDelete(setting)">Delete</button>
         </div>
