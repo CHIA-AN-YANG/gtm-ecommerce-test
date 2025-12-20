@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 
-const authPlugin: FastifyPluginAsync = async (fastify) => {
+const authPluginImpl: FastifyPluginAsync = async (fastify) => {
   fastify.decorate('authenticate', async function (request: any, reply: any) {
     try {
       await request.jwtVerify();
@@ -14,4 +15,4 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
   });
 };
 
-export default authPlugin;
+export default fp(authPluginImpl);
