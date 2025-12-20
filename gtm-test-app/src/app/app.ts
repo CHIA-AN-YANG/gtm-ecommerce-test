@@ -12,10 +12,16 @@ import {
 import { GtmService } from './services/gtm.service';
 import eventParameters from '../../public/json/ecommerce-event-parameters.json';
 import { BehaviorSubject, of } from 'rxjs';
-
+import { RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, EventSelectorComponent, EventFormComponent, PayloadPreviewComponent],
+  imports: [
+    CommonModule,
+    EventSelectorComponent,
+    EventFormComponent,
+    PayloadPreviewComponent,
+    RouterOutlet,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
