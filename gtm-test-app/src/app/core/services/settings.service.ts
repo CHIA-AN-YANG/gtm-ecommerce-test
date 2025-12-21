@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Setting, CreateSettingRequest, UpdateSettingRequest } from '../../models/settings.model';
 import { GtmService } from './gtm.service';
+import { Setting, CreateSettingRequest, UpdateSettingRequest } from '../models/settings.model';
 
 @Injectable({
   providedIn: 'root',
@@ -19,11 +19,16 @@ export class SettingsService {
 
   constructor(private http: HttpClient, private gtmService: GtmService) {
     this.loadActiveSetting();
-    this.activeSetting$.subscribe((setting) => {
-      setting?.gtm_container_id
-        ? this.gtmService.init(setting.gtm_container_id!)
-        : this.gtmService.clear();
-    });
+    this.activeSetting$
+      .pipe(
+        filter((setting) => Boolean(setting)),
+        distinctUntilChanged()
+      )
+      .subscribe((setting) => {
+        setting?.gtm_container_id
+          ? this.gtmService.init(setting.gtm_container_id!)
+          : this.gtmService.clear();
+      });
   }
 
   getSettings(): Observable<Setting[]> {
@@ -67,15 +72,15 @@ export class SettingsService {
   }
 
   setActiveSetting(setting: Setting): void {
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem(this.activeSettingKey, setting.id);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(this.activeSettingKey, setting.id);
     }
     this.activeSettingSubject.next(setting);
   }
 
   clearActiveSetting(): void {
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem(this.activeSettingKey);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.activeSettingKey);
     }
     this.activeSettingSubject.next(null);
   }
@@ -85,10 +90,10 @@ export class SettingsService {
   }
 
   private loadActiveSetting(): void {
-    if (typeof sessionStorage === 'undefined') {
+    if (typeof localStorage === 'undefined') {
       return;
     }
-    const activeId = sessionStorage.getItem(this.activeSettingKey);
+    const activeId = localStorage.getItem(this.activeSettingKey);
     if (activeId) {
       // Will be restored when settings are loaded
       this.getSettings().subscribe();
@@ -96,10 +101,10 @@ export class SettingsService {
   }
 
   private restoreActiveSetting(settings: Setting[]): void {
-    if (typeof sessionStorage === 'undefined') {
+    if (typeof localStorage === 'undefined') {
       return;
     }
-    const activeId = sessionStorage.getItem(this.activeSettingKey);
+    const activeId = localStorage.getItem(this.activeSettingKey);
     if (activeId) {
       const activeSetting = settings.find((s) => s.id === activeId);
       if (activeSetting) {

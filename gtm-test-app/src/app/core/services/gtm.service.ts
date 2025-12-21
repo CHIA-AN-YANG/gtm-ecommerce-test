@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { GA4EcommerceEvent } from '../../models/ga4-events.model';
+import { GA4EcommerceEvent } from '../../features/ecommerce/models/ga4-events.model';
 
 declare global {
   interface Window {

@@ -3,9 +3,13 @@
     <h1>GTM / GA4 Settings</h1>
     <div class="header-actions">
       @if(!showForm){
-      <button class="btn-primary" (click)="onAdd()">Add New Setting</button>
+      <button class="btn btn-primary" (click)="onAdd()">Add New Setting</button>
+      }@else {
+      <div class="form-overlay">
+        <app-settings-form [setting]="editingSetting" (close)="onFormClose()"></app-settings-form>
+      </div>
       }
-      <button class="btn-secondary" (click)="onLogout()">Logout</button>
+      <button class="btn btn-secondary" (click)="onLogout()">Logout</button>
     </div>
   </div>
   @if(errorMessage) {
@@ -14,11 +18,7 @@
   </p>
   } @if((settings$ | async) === null ) {
   <div class="loading">Loading...</div>
-  } @if(showForm){
-  <div class="form-overlay">
-    <app-settings-form [setting]="editingSetting" (close)="onFormClose()"></app-settings-form>
-  </div>
-  } @if((settings$ | async) === null && !showForm){
+  }
   <div class="settings-list">
     @if((settings$ | async)?.length && (settings$ | async)!.length > 0){
 
@@ -45,15 +45,13 @@
           </div>
         </div>
         <div class="setting-actions">
-          <button
-            class="btn-activate"
-            (click)="onSetActive(setting)"
-            [disabled]="isActive(setting)"
-          >
-            {{ isActive(setting) ? 'Active' : 'Set Active' }}
-          </button>
-          <button class="btn-edit" (click)="onEdit(setting)">Edit</button>
-          <button class="btn-delete" (click)="onDelete(setting)">Delete</button>
+          @if(isActive(setting)){
+          <a routerLink="/events">
+            <button class="btn btn-primary">Test with this setting</button></a
+          >} @else {
+          <button class="btn btn-activate" (click)="onSetActive(setting)">Set Active</button>}
+          <button class="btn btn-edit" (click)="onEdit(setting)">Edit</button>
+          <button class="btn btn-delete" (click)="onDelete(setting)">Delete</button>
         </div>
       </div>
       }
@@ -64,5 +62,4 @@
     </div>
     }
   </div>
-  }
 </div>

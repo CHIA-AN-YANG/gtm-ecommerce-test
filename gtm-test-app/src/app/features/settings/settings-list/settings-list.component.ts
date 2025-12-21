@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { AsyncPipe, CommonModule, DatePipe, NgClass } from '@angular/common';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 import { SettingsService } from '../../../core/services/settings.service';
 import { GtmService } from '../../../core/services/gtm.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -11,7 +11,7 @@ import { Setting } from '../../../core/models/settings.model';
 @Component({
   selector: 'app-settings-list',
   standalone: true,
-  imports: [SettingsFormComponent, DatePipe, AsyncPipe],
+  imports: [SettingsFormComponent, DatePipe, AsyncPipe, RouterModule],
   templateUrl: './settings-list.component.html',
   styleUrls: ['./settings-list.component.css'],
 })

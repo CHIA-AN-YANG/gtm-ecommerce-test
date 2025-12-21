@@ -14,7 +14,6 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  token: string;
   user_id: string;
   email: string;
 }
@@ -31,9 +30,7 @@ export class AuthService {
 
   login(data: LoginRequest): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.baseUrl}/auth/login`, data, {
-        withCredentials: true,
-      })
+      .post<AuthResponse>(`${this.baseUrl}/auth/login`, data, { withCredentials: true })
       .pipe(
         tap((response) => this.storeAuthData(response)),
         catchError(this.handleError)
@@ -42,9 +39,7 @@ export class AuthService {
 
   register(data: RegisterRequest): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.baseUrl}/auth/register`, data, {
-        withCredentials: true,
-      })
+      .post<AuthResponse>(`${this.baseUrl}/auth/register`, data, { withCredentials: true })
       .pipe(
         tap((response) => this.storeAuthData(response)),
         catchError(this.handleError)
@@ -99,10 +94,12 @@ export class AuthService {
     // Token is stored in HTTP-only cookie by the server
     // Only store non-sensitive user info in sessionStorage
     this.isAuthenticatedState = true;
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem(
+    console.log('AuthService: storeAuthData called, setting isAuthenticatedState to true');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(
         this.userKey,
         JSON.stringify({
+          user_id: response.user_id,
           email: response.email,
         })
       );
