@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GA4EventType, GA4_EVENT_CONFIGS, EventConfig } from '../models/ga4-events.model';
+import { EventConfig, GA4EventType, GA4_EVENT_CONFIGS } from '../models/ga4-events.model';
 
 @Component({
   selector: 'app-event-selector',

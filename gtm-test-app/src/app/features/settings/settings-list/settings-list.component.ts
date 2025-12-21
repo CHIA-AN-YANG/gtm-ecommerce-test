@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { SettingsService } from '../../services/settings.service';
-import { GtmService } from '../../services/gtm.service';
-import { AuthService } from '../../services/auth.service';
-import { Setting } from '../../models/settings.model';
+import { SettingsService } from '../../../core/services/settings.service';
+import { GtmService } from '../../../core/services/gtm.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { SettingsFormComponent } from '../settings-form/settings-form.component';
 import { Observable, of } from 'rxjs';
+import { Setting } from '../../../core/models/settings.model';
 
 @Component({
   selector: 'app-settings-list',

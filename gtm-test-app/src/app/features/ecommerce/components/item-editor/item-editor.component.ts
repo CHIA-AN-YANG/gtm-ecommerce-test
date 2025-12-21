@@ -1,7 +1,7 @@
 import { Component, Input, inject } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EventParameter } from '../../models/ga4-events.model';
-import eventSchema from '../../../../public/json/ecommerce-event-parameters.json';
+import eventSchema from '../../../../../../public/json/ecommerce-event-parameters.json';
 
 @Component({
   selector: 'app-item-editor',

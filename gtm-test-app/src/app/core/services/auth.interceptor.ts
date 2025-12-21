@@ -19,14 +19,16 @@ export class AuthInterceptor implements HttpInterceptor {
     const authReq = request.clone({
       withCredentials: true,
     });
+    return next.handle(authReq);
 
-    return next.handle(authReq).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          this.router.navigate(['/login']);
-        }
-        return throwError(() => error);
-      })
-    );
+    // return next.handle(authReq).pipe(
+    //   catchError((error: HttpErrorResponse) => {
+    //     if (error.status === 401) {
+    //       console.warn(request.url, 'returned 401 Unauthorized - redirecting to login');
+    //       this.router.navigate(['/login']);
+    //     }
+    //     return throwError(() => error);
+    //   })
+    // );
   }
 }

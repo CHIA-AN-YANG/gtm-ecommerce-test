@@ -1,8 +1,12 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { SettingsService } from '../../services/settings.service';
-import { Setting, CreateSettingRequest, UpdateSettingRequest } from '../../models/settings.model';
+import { SettingsService } from '../../../core/services/settings.service';
+import {
+  Setting,
+  UpdateSettingRequest,
+  CreateSettingRequest,
+} from '../../../core/models/settings.model';
 
 @Component({
   selector: 'app-settings-form',

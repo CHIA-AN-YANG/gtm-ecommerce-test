@@ -7,7 +7,7 @@ import {
   GA4Item,
 } from '../../models/ga4-events.model';
 import { ItemEditorComponent } from '../item-editor/item-editor.component';
-import eventSchema from '../../../../public/json/ecommerce-event-parameters.json';
+import eventSchema from '../../../../../../public/json/ecommerce-event-parameters.json';
 
 @Component({
   selector: 'app-event-form',

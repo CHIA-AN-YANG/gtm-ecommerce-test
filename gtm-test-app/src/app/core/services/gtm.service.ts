@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { GA4EcommerceEvent } from '../models/ga4-events.model';
+import { GA4EcommerceEvent } from '../../models/ga4-events.model';
 
 declare global {
   interface Window {
@@ -39,9 +39,8 @@ export class GtmService {
 
     // If switching to a different GTM ID, reload the page for clean state
     if (this.isInitialized && this.currentGtmId !== gtmId) {
-      console.log('Switching GTM container, reloading page...');
+      console.log('Switching GTM container');
       this.currentGtmId = gtmId;
-      window.location.reload();
       return;
     }
 
@@ -123,6 +122,21 @@ export class GtmService {
       return window.dataLayer;
     }
     return [];
+  }
+
+  clear(): void {
+    this.currentGtmId = null;
+    this.isInitialized = false;
+    if (typeof window !== 'undefined') {
+      window.dataLayer = [];
+      const gtmScripts = document.querySelectorAll('script[src*="googletagmanager.com/gtm.js"]');
+      gtmScripts.forEach((script) => script.remove());
+      const noscripts = document.querySelectorAll(
+        'noscript iframe[src*="googletagmanager.com/ns.html"]'
+      );
+      noscripts.forEach((noscript) => noscript.parentElement?.remove());
+      console.log('GTM cleared from the page.');
+    }
   }
 
   /**

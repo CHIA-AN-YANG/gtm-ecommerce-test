@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
-import { Setting, CreateSettingRequest, UpdateSettingRequest } from '../models/settings.model';
+import { environment } from '../../../environments/environment';
+import { Setting, CreateSettingRequest, UpdateSettingRequest } from '../../models/settings.model';
+import { GtmService } from './gtm.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,8 +17,13 @@ export class SettingsService {
   private activeSettingSubject = new BehaviorSubject<Setting | null>(null);
   public activeSetting$ = this.activeSettingSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private gtmService: GtmService) {
     this.loadActiveSetting();
+    this.activeSetting$.subscribe((setting) => {
+      setting?.gtm_container_id
+        ? this.gtmService.init(setting.gtm_container_id!)
+        : this.gtmService.clear();
+    });
   }
 
   getSettings(): Observable<Setting[]> {

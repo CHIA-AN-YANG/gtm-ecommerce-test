@@ -3,15 +3,15 @@ import { CommonModule } from '@angular/common';
 import { EventSelectorComponent } from '../event-selector.component';
 import { EventFormComponent } from '../event-form/event-form.component';
 import { PayloadPreviewComponent } from '../payload-preview.component';
-import {
-  EventConfig,
-  EventParameter,
-  GA4EcommerceEvent,
-  GA4EventType,
-} from '../../models/ga4-events.model';
-import { GtmService } from '../../services/gtm.service';
-import eventParameters from '../../../../public/json/ecommerce-event-parameters.json';
+import { GtmService } from '../../../../core/services/gtm.service';
+import eventParameters from '../../../../../../public/json/ecommerce-event-parameters.json';
 import { BehaviorSubject } from 'rxjs';
+import {
+  EventParameter,
+  GA4EventType,
+  GA4EcommerceEvent,
+  EventConfig,
+} from '../../models/ga4-events.model';
 
 @Component({
   selector: 'app-event-tester',

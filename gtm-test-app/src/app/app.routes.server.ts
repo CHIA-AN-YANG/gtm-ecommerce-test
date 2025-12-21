@@ -1,9 +1,9 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { SettingsListComponent } from './components/settings-list/settings-list.component';
-import { EventTesterComponent } from './components/event-tester/event-tester.component';
-import { AuthGuard } from './services/auth.guard';
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+import { SettingsListComponent } from './features/settings/settings-list/settings-list.component';
+import { EventTesterComponent } from './features/ecommerce/components/event-tester/event-tester.component';
+import { AuthGuard } from './core/guards/auth.guard';
 import { Route } from '@angular/router';
 
 export const serverRoutes: ServerRoute[] = [
