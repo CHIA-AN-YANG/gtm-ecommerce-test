@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, of } from 'rxjs';
+import { Observable, throwError, of, ObservableInput } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 export interface LoginRequest {
@@ -28,22 +28,16 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  login(data: LoginRequest): Observable<AuthResponse> {
+  login(data: LoginRequest): Observable<AuthResponse | HttpErrorResponse> {
     return this.http
       .post<AuthResponse>(`${this.baseUrl}/auth/login`, data, { withCredentials: true })
-      .pipe(
-        tap((response) => this.storeAuthData(response)),
-        catchError(this.handleError)
-      );
+      .pipe(tap((response) => this.storeAuthData(response)));
   }
 
-  register(data: RegisterRequest): Observable<AuthResponse> {
+  register(data: RegisterRequest): Observable<AuthResponse | HttpErrorResponse> {
     return this.http
       .post<AuthResponse>(`${this.baseUrl}/auth/register`, data, { withCredentials: true })
-      .pipe(
-        tap((response) => this.storeAuthData(response)),
-        catchError(this.handleError)
-      );
+      .pipe(tap((response) => this.storeAuthData(response)));
   }
 
   logout(): Observable<void> {
@@ -111,16 +105,5 @@ export class AuthService {
         })
       );
     }
-  }
-
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An unknown error occurred';
-    if (error.error?.message) {
-      errorMessage = error.error.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    console.error('Auth error:', errorMessage);
-    return throwError(() => new Error(errorMessage));
   }
 }

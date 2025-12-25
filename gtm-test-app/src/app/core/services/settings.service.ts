@@ -18,7 +18,6 @@ export class SettingsService {
   public activeSetting$ = this.activeSettingSubject.asObservable();
 
   constructor(private http: HttpClient, private gtmService: GtmService) {
-    this.loadActiveSetting();
     this.activeSetting$
       .pipe(
         filter((setting) => Boolean(setting)),
@@ -33,7 +32,10 @@ export class SettingsService {
 
   getSettings(): Observable<Setting[]> {
     return this.http.get<Setting[]>(`${this.baseUrl}/api/settings`, { withCredentials: true }).pipe(
-      tap((settings) => this.settingsSubject.next(settings)),
+      tap((settings) => {
+        this.settingsSubject.next(settings);
+        this.loadActiveSetting(settings);
+      }),
       catchError(this.handleError)
     );
   }
@@ -89,24 +91,13 @@ export class SettingsService {
     return this.activeSettingSubject.value;
   }
 
-  private loadActiveSetting(): void {
+  private loadActiveSetting(settings: Setting[]): void {
     if (typeof localStorage === 'undefined') {
       return;
     }
     const activeId = localStorage.getItem(this.activeSettingKey);
     if (activeId) {
-      // Will be restored when settings are loaded
-      this.getSettings().subscribe();
-    }
-  }
-
-  private restoreActiveSetting(settings: Setting[]): void {
-    if (typeof localStorage === 'undefined') {
-      return;
-    }
-    const activeId = localStorage.getItem(this.activeSettingKey);
-    if (activeId) {
-      const activeSetting = settings.find((s) => s.id === activeId);
+      const activeSetting = settings.find((s) => s.id == activeId);
       if (activeSetting) {
         this.activeSettingSubject.next(activeSetting);
       } else {
