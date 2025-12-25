@@ -1,19 +1,20 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, signal } from '@angular/core';
+import { AsyncPipe, CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { Observable, of, take } from 'rxjs';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  errorMessage: string | null = null;
+  errorMessage = signal('');
 
   constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
@@ -25,9 +26,15 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.loginForm.invalid) return;
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => this.router.navigate(['/settings']),
-      error: (err) => (this.errorMessage = err.message),
-    });
+    this.authService
+      .login(this.loginForm.value)
+      .pipe(take(1))
+      .subscribe({
+        next: () => this.router.navigate(['/settings']),
+        error: (err) => {
+          const msg = err.error?.message || err.message || 'An unknown error occurred';
+          this.errorMessage.set(msg);
+        },
+      });
   }
 }

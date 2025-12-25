@@ -28,13 +28,15 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     // Validate input
     if (!email || !password) {
-      return reply.code(400).send({ error: 'Email and password are required' });
+      return reply
+        .code(400)
+        .send({ message: 'Email and password are required' });
     }
 
     if (password.length < 6) {
       return reply
         .code(400)
-        .send({ error: 'Password must be at least 6 characters' });
+        .send({ message: 'Password must be at least 6 characters' });
     }
 
     try {
@@ -67,11 +69,11 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         error.code === 'SQLITE_CONSTRAINT' ||
         error.message.includes('UNIQUE')
       ) {
-        return reply.code(409).send({ error: 'Email already registered' });
+        return reply.code(409).send({ message: 'Email already registered' });
       }
 
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to register user' });
+      return reply.code(500).send({ message: 'Failed to register user' });
     }
   });
 
@@ -81,7 +83,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
 
     // Validate input
     if (!email || !password) {
-      return reply.code(400).send({ error: 'Email and password are required' });
+      return reply.code(400).send('Email and password are required');
     }
 
     try {
@@ -95,7 +97,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         | undefined;
 
       if (!user) {
-        return reply.code(401).send({ error: 'Invalid email or password' });
+        return reply.code(401).send({ message: 'Invalid email or password' });
       }
 
       // Verify password
@@ -105,7 +107,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       );
 
       if (!isValidPassword) {
-        return reply.code(401).send({ error: 'Invalid email or password' });
+        return reply.code(401).send({ message: 'Invalid email or password' });
       }
 
       // Generate JWT token
@@ -123,7 +125,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       });
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to login' });
+      return reply.code(500).send({ message: 'Failed to login' });
     }
   });
 
