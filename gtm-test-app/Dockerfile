@@ -28,9 +28,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY package.json ./
 
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=4000
 
-EXPOSE 8080
+EXPOSE 4000
 
 # Start Angular SSR server
 CMD ["node", "dist/gtm-test-app/server/server.mjs"]

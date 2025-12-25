@@ -8,6 +8,28 @@ interface EventBody {
 const MAX_EVENTS_PER_USER = 20;
 
 const eventsRoutes: FastifyPluginAsync = async (fastify) => {
+  fastify.get(
+    '/api/events',
+    {
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      const userId = request.user.user_id;
+
+      const events = fastify.db
+        .prepare(
+          `
+      SELECT id, event_name, payload, created_at
+      FROM events
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+    `
+        )
+        .all(userId);
+
+      return reply.send(events);
+    }
+  );
   // POST /api/events - Store GA4 ecommerce event with per-user limit
   fastify.post<{ Body: EventBody }>(
     '/api/events',

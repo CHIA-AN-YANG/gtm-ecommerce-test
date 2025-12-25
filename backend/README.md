@@ -39,14 +39,14 @@ SQLite database is stored in `data/app.db` (persistent volume).
 
 - `GET /health` - Health check endpoint
 
-## Run Docker
+## Run Docker Locally
 
 ```bash
 # docker build
 cd /backend && docker build -t gtm-backend:test .
 
 # run, add environment variables if .env is not set
-docker run -d --name gtm-backend -p 8080:8080 -e JWT_SECRET=test-secret-key-for-development -v /Users/annayang/o/vibe-code/gtm-ecommerce-test/backend/data:/app/data gtm-backend:test
+docker run -d --name gtm-backend -p 8080:8080 -e JWT_SECRET='secret_key' -e CORS_ORIGINS='http://localhost:4000' gtm-backend:test
 
 # check status
 docker logs gtm-backend

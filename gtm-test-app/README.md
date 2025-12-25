@@ -13,10 +13,10 @@ ng serve
 ## Run with Docker
 ```bash
 # build
-cd /gtm-test-app && docker build -t gtm-frontend:test .
+cd /gtm-test-app && docker build -t gtm-ssr-app:test .
 # run
-docker run -d --name gtm-frontend -p 8081:8080 gtm-frontend:test
-# test services
+docker run -d --name gtm-ssr-app -p 4000:4000 gtm-ssr-app:test
+# check backend and frontend services
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 ```
 

@@ -4,17 +4,20 @@ This monorepo contains two services configured for Zeabur deployment:
 
 ## Services
 
-### Backend (Fastify)
+### Backend (Fastify + Node.js)
 - **Location**: `backend/`
 - **Port**: 8080 (configurable via `PORT` env variable)
 - **Build**: Multi-stage Docker build with TypeScript compilation
-- **Database**: SQLite stored in `/app/data` volume
+- **Runtime**: Node.js 20 Alpine
+- **Database**: SQLite stored in `/app/data` volume (requires persistent volume)
+- **Entry Point**: `node dist/server.js`
 
-### Frontend (Angular)
+### Frontend (Angular SSR)
 - **Location**: `gtm-test-app/`
-- **Port**: 8080 (configurable via `PORT` env variable)
-- **Server**: Caddy (static file server with SPA routing)
-- **Build**: Static files served from `/srv`
+- **Port**: 4000 (configurable via `PORT` env variable)
+- **Runtime**: Node.js 20 Alpine with Angular Universal SSR
+- **Build**: Angular SSR build (not static files)
+- **Entry Point**: `node dist/gtm-test-app/server/server.mjs`
 
 ## Environment Variables
 
@@ -30,7 +33,11 @@ DEFAULT_GTM_CONTAINER_ID=GTM-XXXXXXXX
 ```
 
 ### Frontend
-No environment variables required - API calls use relative path `/api` in production.
+```env
+PORT=4000                           # Zeabur will set this automatically
+```
+
+**Note**: Frontend uses `http://localhost:8080/api` for API calls. In production, configure reverse proxy or update `environment.ts` to use your backend URL.
 
 ## Zeabur Configuration
 
@@ -50,9 +57,16 @@ No environment variables required - API calls use relative path `/api` in produc
 5. Deploy
 
 ### Routing Setup
-Configure Zeabur to route:
-- `/api/*` → Backend service
-- `/*` → Frontend service
+
+**Option 1: Separate Domains (Recommended)**
+- Backend: `api.yourdomain.com` (port 8080)
+- Frontend: `yourdomain.com` (port 4000)
+- Update `environment.ts` with backend URL: `https://api.yourdomain.com`
+
+**Option 2: Single Domain with Path-Based Routing**
+- Configure Zeabur gateway/nginx:
+  - `/api/*` → Backend service (port 8080)
+  - `/*` → Frontend service (port 4000)
 
 ## Local Development
 
@@ -66,8 +80,8 @@ npm run dev  # Runs on port 8080
 ### Frontend
 ```bash
 cd gtm-test-app
-npm install
-npm start    # Runs on port 4200, proxies API to localhost:8080
+yarn install
+yarn dev     # Runs on port 4200 with SSR
 ```
 
 ## Docker Build & Test Locally
@@ -75,47 +89,95 @@ npm start    # Runs on port 4200, proxies API to localhost:8080
 ### Backend
 ```bash
 cd backend
-docker build -t backend .
-docker run -p 8080:8080 \
-  -e JWT_SECRET=test-secret \
+docker build -t gtm-backend:test .
+docker run -d --name gtm-backend \
+  -p 8080:8080 \
+  -e JWT_SECRET=test-secret-key \
   -v $(pwd)/data:/app/data \
-  backend
+  gtm-backend:test
+
+# Check logs
+docker logs gtm-backend
+
+# Test health endpoint
+curl http://localhost:8080/health
 ```
 
 ### Frontend
 ```bash
 cd gtm-test-app
-docker build -t frontend .
-docker run -p 8080:8080 frontend
+docker build -t gtm-frontend:test .
+docker run -d --name gtm-frontend \
+  -p 4000:4000 \
+  gtm-frontend:test
+
+# Check logs
+docker logs gtm-frontend
+
+# Test frontend
+open http://localhost:4000
+```
+
+### Stop & Clean Up
+```bash
+docker stop gtm-backend gtm-frontend
+docker rm gtm-backend gtm-frontend
 ```
 
 ## Production Checklist
 
-- [ ] Set strong `JWT_SECRET` in backend environment
-- [ ] Configure CORS in backend for frontend domain
-- [ ] Set up persistent volume for SQLite database in backend
-- [ ] Verify SPA routing works (refresh on any route)
-- [ ] Test API proxy routing (`/api` → backend)
-- [ ] Monitor logs for both services
+### Backend
+- [ ] Set strong `JWT_SECRET` in backend environment variables
+- [ ] Configure `DEFAULT_USER_EMAIL` and `DEFAULT_USER_PASSWORD` for initial user
+- [ ] Set up **persistent volume** for `/app/data` (SQLite database)
+- [ ] Configure CORS for your frontend domain
+- [ ] Verify health endpoint: `https://api.yourdomain.com/health`
+- [ ] Test authentication endpoints (register/login)
+
+### Frontend
+- [ ] Update `environment.ts` with production backend URL
+- [ ] Verify SSR is working (view source should show rendered HTML)
+- [ ] Test all routes work on refresh (SSR handles routing)
+- [ ] Check API calls reach backend correctly
+- [ ] Monitor SSR server logs for errors
+
+### Infrastructure
+- [ ] Set up monitoring/alerts for both services
+- [ ] Configure backup strategy for SQLite database
+- [ ] Test failover and restart scenarios
 
 ## Architecture
 
 ```
-┌─────────────────┐
-│   Zeabur Load   │
-│    Balancer     │
-└────────┬────────┘
+┌─────────────────────────┐
+│    Zeabur Platform      │
+└────────┬────────────────┘
          │
-    ┌────┴────┐
-    │         │
-┌───▼──┐  ┌──▼───┐
-│ /*   │  │ /api │
-│Frontend Backend│
-│(Caddy)│  │(Node)│
-│:8080 │  │:8080 │
-└──────┘  └──┬───┘
-             │
-          ┌──▼──┐
-          │SQLite│
-          └─────┘
+    ┌────┴────────┐
+    │             │
+┌───▼────┐    ┌───▼────┐
+│Frontend│    │Backend │
+│ (SSR)  │    │(Fastify)│
+│ Node.js│───▶│ Node.js│
+│  :4000 │    │  :8080 │
+└────────┘    └────┬───┘
+                   │
+              ┌────▼────┐
+              │ SQLite  │
+              │Database │
+              │ Volume  │
+              └─────────┘
 ```
+
+### Request Flow
+1. User requests → `yourdomain.com` → Frontend SSR (port 4000)
+2. Frontend makes API calls → `api.yourdomain.com` or `/api` → Backend (port 8080)
+3. Backend processes request, queries SQLite, returns JSON
+4. Frontend SSR renders page with data, serves to client
+
+### Technology Stack
+- **Frontend**: Angular 19 with SSR (Universal), TypeScript
+- **Backend**: Fastify 4, TypeScript, bcrypt, JWT
+- **Database**: SQLite 3 with better-sqlite3
+- **Runtime**: Node.js 20 Alpine (both services)
+- **Deployment**: Docker multi-stage builds on Zeabur
