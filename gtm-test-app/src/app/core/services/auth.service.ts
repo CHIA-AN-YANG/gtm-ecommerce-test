@@ -84,6 +84,13 @@ export class AuthService {
       .get<{ authenticated: boolean }>(`${this.baseUrl}/auth/status`, { withCredentials: true })
       .pipe(
         map((result) => Boolean(result.authenticated)),
+        tap((isAuth) => {
+          this.isAuthenticatedState = isAuth;
+          console.log(
+            'AuthService: checkAuthStatus called, setting isAuthenticatedState to',
+            isAuth
+          );
+        }),
         catchError(() => {
           return of(false);
         })

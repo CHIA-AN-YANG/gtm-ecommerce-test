@@ -82,7 +82,6 @@ export class SettingsListComponent implements OnInit {
 
   onSetActive(setting: Setting): void {
     this.settingsService.setActiveSetting(setting);
-    this.gtmService.init(setting.gtm_container_id);
   }
 
   isActive(setting: Setting): boolean {
