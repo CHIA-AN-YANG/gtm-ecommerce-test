@@ -3,6 +3,8 @@
 Node.js + Fastify backend with SQLite database.
 
 ## Setup
+1. Install dependancies
+2. Set up `.env` file based on `.env.example`
 
 ```bash
 npm install
@@ -36,3 +38,16 @@ SQLite database is stored in `data/app.db` (persistent volume).
 ## API Endpoints
 
 - `GET /health` - Health check endpoint
+
+## Run Docker
+
+```bash
+# docker build
+cd /backend && docker build -t gtm-backend:test .
+
+# run, add environment variables if .env is not set
+docker run -d --name gtm-backend -p 8080:8080 -e JWT_SECRET=test-secret-key-for-development -v /Users/annayang/o/vibe-code/gtm-ecommerce-test/backend/data:/app/data gtm-backend:test
+
+# check status
+docker logs gtm-backend
+```

@@ -10,7 +10,7 @@ import settingsRoutes from './settings/routes.js';
 import eventsRoutes from './events/routes.js';
 import cors from '@fastify/cors';
 
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.PORT || '8080', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 
 async function buildServer() {

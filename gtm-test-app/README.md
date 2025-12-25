@@ -10,6 +10,16 @@ To start a local development server, run:
 ng serve
 ```
 
+## Run with Docker
+```bash
+# build
+cd /gtm-test-app && docker build -t gtm-frontend:test .
+# run
+docker run -d --name gtm-frontend -p 8081:8080 gtm-frontend:test
+# test services
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+```
+
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
 ## Code scaffolding
@@ -53,6 +63,7 @@ ng e2e
 ```
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
 
 ## Additional Resources
 
